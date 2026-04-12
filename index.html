@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodConnect - Online Blood Donation</title>
+    <meta name="description" content="Connect with blood donors and save lives during emergencies.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="logo nav-action" data-target="home">
+                <i class='bx bxs-donate-blood'></i> BloodConnect
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="nav-action" data-target="home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li id="nav-dashboard-link" style="display: none;"><a href="#" class="nav-action" data-target="dashboard">Dashboard</a></li>
+            </ul>
+            <div class="nav-buttons" id="nav-auth-buttons">
+                <button class="btn btn-outline nav-action" data-target="login">Login</button>
+                <button class="btn btn-primary nav-action" data-target="register">Register</button>
+            </div>
+            <div class="nav-user-profile" id="nav-user-profile" style="display: none;">
+                <div class="user-avatar nav-action" data-target="profile">
+                    <i class='bx bxs-user'></i>
+                </div>
+                <button class="btn btn-outline btn-sm" id="logout-btn">Logout</button>
+            </div>
+            <div class="mobile-menu-toggle">
+                <i class='bx bx-menu'></i>
+            </div>
+        </div>
+    </nav>
+
+    <main id="app-content">
+        <!-- 1. LANDING PAGE (Home) -->
+        <section id="home-view" class="view-section active">
+            <!-- Hero Sec -->
+            <header class="hero">
+                <div class="container hero-container">
+                    <div class="hero-content">
+                        <h1>Donate Blood, Save Lives</h1>
+                        <p>Connect with donors and save lives during emergencies. A single drop can make a difference.</p>
+                        <div class="hero-buttons">
+                            <button class="btn btn-primary btn-lg nav-action" data-target="register">Become a Donor</button>
+                            <button class="btn btn-secondary btn-lg nav-action" data-target="search">Find Blood</button>
+                        </div>
+                    </div>
+                    <div class="hero-image">
+                        <!-- Placeholder for hero image - CSS will handle background or we use icon illustration -->
+                        <div class="hero-illustration">
+                            <i class='bx bx-pulse'></i>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- How It Works Section -->
+            <section class="how-it-works section-padding">
+                <div class="container">
+                    <h2 class="section-title">How It Works</h2>
+                    <div class="grid grid-3">
+                        <div class="card icon-card text-center">
+                            <div class="card-icon"><i class='bx bx-user-plus'></i></div>
+                            <h3>Register</h3>
+                            <p>Sign up easily as a donor or a patient needing blood.</p>
+                        </div>
+                        <div class="card icon-card text-center">
+                            <div class="card-icon"><i class='bx bx-search-alt'></i></div>
+                            <h3>Search</h3>
+                            <p>Find matching blood groups in your city.</p>
+                        </div>
+                        <div class="card icon-card text-center">
+                            <div class="card-icon"><i class='bx bx-link-external'></i></div>
+                            <h3>Connect</h3>
+                            <p>Contact the donor directly and save a life safely.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Emergency Banner -->
+            <section class="emergency-banner">
+                <div class="container emergency-container">
+                    <div class="emergency-text">
+                        <h2>Need Blood Urgently? Post a request instantly.</h2>
+                        <p>Our community is standing by to help you in times of critical need.</p>
+                    </div>
+                    <button class="btn btn-dark btn-lg nav-action" data-target="emergency">Request Now</button>
+                </div>
+            </section>
+
+            <!-- Why Donate Section -->
+            <section class="why-donate section-padding bg-light">
+                <div class="container">
+                    <h2 class="section-title">Why Donate Blood?</h2>
+                    <div class="grid grid-3">
+                        <div class="card text-center">
+                            <div class="why-icon"><i class='bx bxs-heart'></i></div>
+                            <div class="card-body">
+                                <h3>Saves Lives</h3>
+                                <p>One donation can save up to three lives. Your contribution makes a massive impact.</p>
+                            </div>
+                        </div>
+                        <div class="card text-center">
+                            <div class="why-icon"><i class='bx bx-first-aid'></i></div>
+                            <div class="card-body">
+                                <h3>Emergency Help</h3>
+                                <p>Blood is always needed in critical emergency scenarios and serious surgeries.</p>
+                            </div>
+                        </div>
+                        <div class="card text-center">
+                            <div class="why-icon"><i class='bx bx-group'></i></div>
+                            <div class="card-body">
+                                <h3>Community Support</h3>
+                                <p>Join a caring community and help those who are in desperate need locally.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- 2. AUTHENTICATION PAGES -->
+        <!-- Login View -->
+        <section id="login-view" class="view-section">
+            <div class="container auth-container">
+                <div class="auth-card card">
+                    <h2 class="text-center">Welcome Back</h2>
+                    <p class="text-center text-muted mb-4">Login to your BloodConnect account</p>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-email">Phone or Email</label>
+                            <input type="text" id="login-email" class="form-control" placeholder="Enter phone or email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" class="form-control" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Login</button>
+                        <div class="divider">or</div>
+                        <button type="button" class="btn btn-outline btn-block">Login with OTP</button>
+                    </form>
+                    <p class="text-center mt-3">Don't have an account? <a href="#" class="nav-action" data-target="register">Register</a></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Register View -->
+        <section id="register-view" class="view-section">
+            <div class="container auth-container">
+                <div class="auth-card card card-lg">
+                    <h2 class="text-center">Create an Account</h2>
+                    <p class="text-center text-muted mb-4">Join BloodConnect to help save lives</p>
+                    <form id="register-form">
+                        <div class="grid-2-col">
+                            <div class="form-group">
+                                <label for="reg-name">Full Name</label>
+                                <input type="text" id="reg-name" class="form-control" placeholder="John Doe" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-age">Age</label>
+                                <input type="number" id="reg-age" class="form-control" placeholder="e.g. 25" min="18" max="65" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-blood">Blood Group</label>
+                                <select id="reg-blood" class="form-control" required>
+                                    <option value="" disabled selected>Select Blood Group</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-city">City</label>
+                                <input type="text" id="reg-city" class="form-control" placeholder="e.g. New York" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-phone">Phone Number</label>
+                                <input type="tel" id="reg-phone" class="form-control" placeholder="Enter phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-password">Password</label>
+                                <input type="password" id="reg-password" class="form-control" placeholder="Create password" required>
+                            </div>
+                            <div class="form-group col-span-2">
+                                <label for="reg-confirm">Confirm Password</label>
+                                <input type="password" id="reg-confirm" class="form-control" placeholder="Confirm password" required>
+                            </div>
+                        </div>
+                        <div class="form-group form-check mt-3">
+                            <input type="checkbox" id="reg-eligible" required>
+                            <label for="reg-eligible">I am eligible to donate blood (Over 18, weigh > 50kg, no chronic diseases)</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block mt-4">Register</button>
+                    </form>
+                    <p class="text-center mt-3">Already have an account? <a href="#" class="nav-action" data-target="login">Login</a></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. DASHBOARD PAGE -->
+        <section id="dashboard-view" class="view-section section-padding bg-light">
+            <div class="container">
+                <div class="dashboard-header mb-4">
+                    <h2 id="dashboard-welcome">Welcome, User 👋</h2>
+                    <p class="text-muted">What would you like to do today?</p>
+                </div>
+                <div class="grid grid-3">
+                    <div class="card dashboard-card hover-lift nav-action" data-target="search">
+                        <div class="card-icon bg-primary-light text-primary"><i class='bx bx-search'></i></div>
+                        <h3>Find Blood</h3>
+                        <p>Search for blood donors in your area.</p>
+                    </div>
+                    <div class="card dashboard-card hover-lift nav-action" data-target="emergency">
+                        <div class="card-icon bg-danger-light text-danger"><i class='bx bx-first-aid'></i></div>
+                        <h3>Emergency Request</h3>
+                        <p>Post an urgent request for blood.</p>
+                    </div>
+                    <div class="card dashboard-card hover-lift nav-action" data-target="profile">
+                        <div class="card-icon bg-success-light text-success"><i class='bx bx-user'></i></div>
+                        <h3>My Profile</h3>
+                        <p>Update your personal information.</p>
+                    </div>
+                    <div class="card dashboard-card hover-lift nav-action" data-target="hospitals">
+                        <div class="card-icon bg-info-light text-info"><i class='bx bx-building-house'></i></div>
+                        <h3>Hospitals</h3>
+                        <p>View partnered hospitals & blood banks.</p>
+                    </div>
+                    <div class="card dashboard-card hover-lift nav-action" data-target="tips">
+                        <div class="card-icon bg-warning-light text-warning"><i class='bx bx-bulb'></i></div>
+                        <h3>Tips</h3>
+                        <p>Read blood donation awareness tips.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. SEARCH DONOR PAGE -->
+        <section id="search-view" class="view-section section-padding">
+            <div class="container">
+                <h2 class="section-title">Search for Blood Donors</h2>
+                <div class="search-filter-card card mb-5">
+                    <form id="search-form" class="search-form">
+                        <div class="search-row">
+                            <div class="form-group flex-1">
+                                <label for="search-blood">Blood Group</label>
+                                <select id="search-blood" class="form-control">
+                                    <option value="" disabled selected>Select Group</option>
+                                    <option value="A+">A+</option>
+                                    <option value="B+">B+</option>
+                                    <option value="O+">O+</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B-">B-</option>
+                                    <option value="O-">O-</option>
+                                    <option value="AB-">AB-</option>
+                                </select>
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="search-city">City</label>
+                                <input type="text" id="search-city" class="form-control" placeholder="Enter City">
+                            </div>
+                            <div class="form-group align-bottom">
+                                <button type="submit" class="btn btn-primary btn-block"><i class='bx bx-search'></i> Search</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="search-results">
+                    <h3>Search Results</h3>
+                    <div class="grid grid-3 mt-3" id="donor-results-grid">
+                        <!-- Mock Data injected by JS or hardcoded -->
+                        <div class="card donor-card">
+                            <div class="donor-header flex-between">
+                                <div class="donor-avatar"><i class='bx bxs-user'></i></div>
+                                <div class="blood-badge">A+</div>
+                            </div>
+                            <h4 class="mt-3">Michael Scott</h4>
+                            <p class="text-muted"><i class='bx bx-map'></i> Scranton </p>
+                            <p class="text-muted"><i class='bx bxs-phone'></i> +1 234 567 8900</p>
+                            <button class="btn btn-outline btn-block mt-3"><i class='bx bxs-phone-call'></i> Call Donor</button>
+                        </div>
+                        <div class="card donor-card">
+                            <div class="donor-header flex-between">
+                                <div class="donor-avatar"><i class='bx bxs-user'></i></div>
+                                <div class="blood-badge">O-</div>
+                            </div>
+                            <h4 class="mt-3">Sarah Connor</h4>
+                            <p class="text-muted"><i class='bx bx-map'></i> Los Angeles</p>
+                            <p class="text-muted"><i class='bx bxs-phone'></i> +1 987 654 3210</p>
+                            <button class="btn btn-outline btn-block mt-3"><i class='bx bxs-phone-call'></i> Call Donor</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. EMERGENCY REQUEST PAGE -->
+        <section id="emergency-view" class="view-section section-padding bg-light">
+            <div class="container">
+                <div class="grid grid-2 gap-4">
+                    <!-- Form Side -->
+                    <div>
+                        <div class="card">
+                            <h2 class="mb-3 text-danger"><i class='bx bxs-bell-ring'></i> Post Emergency Request</h2>
+                            <p class="text-muted mb-4">Fill out this form to broadcast an urgent blood requirement.</p>
+                            <form id="emergency-form">
+                                <div class="form-group">
+                                    <label for="em-name">Patient Name</label>
+                                    <input type="text" id="em-name" class="form-control" placeholder="Patient's full name" required>
+                                </div>
+                                <div class="grid-2-col">
+                                    <div class="form-group">
+                                        <label for="em-blood">Blood Group Needed</label>
+                                        <select id="em-blood" class="form-control" required>
+                                            <option value="" disabled selected>Select Group</option>
+                                            <option value="A+">A+</option>
+                                            <option value="B+">B+</option>
+                                            <option value="O+">O+</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B-">B-</option>
+                                            <option value="O-">O-</option>
+                                            <option value="AB-">AB-</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="em-city">City</label>
+                                        <input type="text" id="em-city" class="form-control" placeholder="City" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="em-hospital">Hospital Name</label>
+                                    <input type="text" id="em-hospital" class="form-control" placeholder="Hospital/Clinic name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="em-contact">Contact Number</label>
+                                    <input type="tel" id="em-contact" class="form-control" placeholder="Emergency contact number" required>
+                                </div>
+                                <button type="submit" class="btn btn-danger btn-block mt-3">Submit Emergency Request</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Active Requests Side -->
+                    <div>
+                        <h3 class="mb-3">Active Emergency Requests</h3>
+                        <div class="emergency-list" id="emergency-list">
+                            <!-- Request Card -->
+                            <div class="card emergency-card border-danger mb-3">
+                                <div class="flex-between">
+                                    <h4 class="text-danger">Jane Doe</h4>
+                                    <div class="blood-badge danger">O+</div>
+                                </div>
+                                <p class="mb-1"><i class='bx bx-building-house'></i> City Hospital, New York</p>
+                                <p class="mb-2"><i class='bx bx-time'></i> Posted 2 hours ago</p>
+                                <button class="btn btn-primary btn-sm"><i class='bx bxs-phone'></i> Contact: +1 555 1234</button>
+                            </div>
+                            <!-- Request Card -->
+                            <div class="card emergency-card border-danger mb-3">
+                                <div class="flex-between">
+                                    <h4 class="text-danger">John Smith</h4>
+                                    <div class="blood-badge danger">AB-</div>
+                                </div>
+                                <p class="mb-1"><i class='bx bx-building-house'></i> General Med Center, Chicago</p>
+                                <p class="mb-2"><i class='bx bx-time'></i> Posted 5 hours ago</p>
+                                <button class="btn btn-primary btn-sm"><i class='bx bxs-phone'></i> Contact: +1 555 9876</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. PROFILE PAGE -->
+        <section id="profile-view" class="view-section section-padding">
+            <div class="container auth-container">
+                <div class="card profile-card text-center">
+                    <div class="profile-avatar mb-3">
+                        <i class='bx bxs-user-circle' style="font-size: 80px; color: var(--primary);"></i>
+                    </div>
+                    <h2 class="mb-1" id="profile-name-disp">John Doe</h2>
+                    <p class="text-muted mb-3">Joined in 2026</p>
+                    
+                    <div class="profile-details text-left mb-4">
+                        <div class="detail-row flex-between">
+                            <span class="text-muted">Blood Group</span>
+                            <span class="fw-bold" id="profile-blood-disp">A+</span>
+                        </div>
+                        <div class="detail-row flex-between">
+                            <span class="text-muted">City</span>
+                            <span class="fw-bold" id="profile-city-disp">New York</span>
+                        </div>
+                        <div class="detail-row flex-between">
+                            <span class="text-muted">Phone</span>
+                            <span class="fw-bold" id="profile-phone-disp">+123 456 7890</span>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-actions flex-between">
+                        <button class="btn btn-outline flex-1 mr-2"><i class='bx bx-edit'></i> Edit Profile</button>
+                        <button class="btn btn-danger-outline flex-1 ml-2"><i class='bx bx-trash'></i> Delete Account</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. EXTRA PAGES: Hospitals -->
+        <section id="hospitals-view" class="view-section section-padding">
+            <div class="container">
+                <h2 class="section-title">Partnered Hospitals & Blood Banks</h2>
+                <div class="grid grid-3">
+                    <div class="card">
+                        <h4>City General Hospital</h4>
+                        <p class="text-muted mb-2"><i class='bx bx-map'></i> 123 Health Ave, NY</p>
+                        <p><i class='bx bx-phone'></i> +1 222 333 4444</p>
+                    </div>
+                    <div class="card">
+                        <h4>Red Cross Med Center</h4>
+                        <p class="text-muted mb-2"><i class='bx bx-map'></i> 45 Care Blvd, LA</p>
+                        <p><i class='bx bx-phone'></i> +1 555 666 7777</p>
+                    </div>
+                    <div class="card">
+                        <h4>LifeCare Clinic</h4>
+                        <p class="text-muted mb-2"><i class='bx bx-map'></i> 78 Wellness St, Chicago</p>
+                        <p><i class='bx bx-phone'></i> +1 888 999 0000</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. EXTRA PAGES: Tips -->
+        <section id="tips-view" class="view-section section-padding bg-light">
+            <div class="container">
+                <h2 class="section-title">Blood Donation Awareness & Tips</h2>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h4>Pre-Donation Tips</h4>
+                        <ul class="tips-list">
+                            <li>Drink plenty of water before donating.</li>
+                            <li>Eat a healthy meal, avoid fatty foods.</li>
+                            <li>Get a good night's sleep.</li>
+                            <li>Bring your ID and a list of medications you take.</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h4>Post-Donation Care</h4>
+                        <ul class="tips-list">
+                            <li>Keep the bandage on for the next few hours.</li>
+                            <li>Rest for a few minutes before leaving the center.</li>
+                            <li>Avoid strenuous physical activity for 24 hours.</li>
+                            <li>Drink extra fluids for the next day.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-col">
+                <div class="logo white-logo mb-3">
+                    <i class='bx bxs-donate-blood'></i> BloodConnect
+                </div>
+                <p>Connect with donors and save lives during emergencies. A single drop can make a difference.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <a href="#" class="nav-action" data-target="home">Home</a>
+                <a href="#" class="nav-action" data-target="search">Find Blood</a>
+                <a href="#" class="nav-action" data-target="emergency">Emergency Requests</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 BloodConnect. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
