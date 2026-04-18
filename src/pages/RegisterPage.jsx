@@ -6,6 +6,7 @@ const bloodGroups = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 
 const initialForm = {
   fullName: "",
+  userRole: "donor",
   age: "",
   bloodGroup: "",
   city: "",
@@ -13,7 +14,10 @@ const initialForm = {
   email: "",
   password: "",
   confirmPassword: "",
-  isAvailable: true
+  isAvailable: true,
+  licenseNumber: "",
+  registrationNumber: "",
+  isGovernment: false
 };
 
 export default function RegisterPage() {
@@ -37,14 +41,24 @@ export default function RegisterPage() {
     try {
       const payload = {
         fullName: form.fullName,
-        age: Number(form.age),
-        bloodGroup: form.bloodGroup,
+        userRole: form.userRole,
         city: form.city,
         phone: form.phone,
         email: form.email,
         password: form.password,
-        isAvailable: form.isAvailable
       };
+
+      if (form.userRole === "donor") {
+        payload.age = Number(form.age);
+        payload.bloodGroup = form.bloodGroup;
+        payload.isAvailable = form.isAvailable;
+      } else if (form.userRole === "bloodbank") {
+        payload.licenseNumber = form.licenseNumber;
+      } else if (form.userRole === "hospital") {
+        payload.registrationNumber = form.registrationNumber;
+        payload.isGovernment = form.isGovernment;
+      }
+
       await register(payload);
       navigate("/dashboard");
     } catch (submitError) {
@@ -57,19 +71,38 @@ export default function RegisterPage() {
   return (
     <section className="page-shell container auth-wrap">
       <div className="auth-panel">
-        <p className="eyebrow">Donor onboarding</p>
-        <h1>Join the network that answers faster.</h1>
+        <p className="eyebrow">Join BloodConnect</p>
+        <h1>A network for everyone.</h1>
         <p>
-          Register once and your profile becomes searchable in the Neon-backed donor
-          database.
+          Register as a donor, blood bank, or hospital to help strengthen the community.
         </p>
       </div>
 
       <form className="form-card large" onSubmit={handleSubmit}>
         <h2>Create account</h2>
+        
+        <div className="role-selector mb-6">
+          <label className="block mb-2 font-semibold">I am a...</label>
+          <div className="flex gap-4">
+            {["donor", "bloodbank", "hospital"].map((role) => (
+              <label key={role} className={`role-option ${form.userRole === role ? 'active' : ''}`}>
+                <input
+                  type="radio"
+                  name="userRole"
+                  value={role}
+                  checked={form.userRole === role}
+                  onChange={(e) => setForm({ ...form, userRole: e.target.value })}
+                  className="hidden"
+                />
+                <span className="capitalize">{role.replace('bank', ' bank')}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
         <div className="form-grid">
           <label>
-            Full name
+            {form.userRole === 'donor' ? 'Full name' : 'Organization name'}
             <input
               type="text"
               value={form.fullName}
@@ -77,32 +110,62 @@ export default function RegisterPage() {
               required
             />
           </label>
-          <label>
-            Age
-            <input
-              type="number"
-              min="18"
-              max="65"
-              value={form.age}
-              onChange={(event) => setForm({ ...form, age: event.target.value })}
-              required
-            />
-          </label>
-          <label>
-            Blood group
-            <select
-              value={form.bloodGroup}
-              onChange={(event) => setForm({ ...form, bloodGroup: event.target.value })}
-              required
-            >
-              <option value="">Select blood group</option>
-              {bloodGroups.map((group) => (
-                <option key={group} value={group}>
-                  {group}
-                </option>
-              ))}
-            </select>
-          </label>
+          
+          {form.userRole === "donor" && (
+            <>
+              <label>
+                Age
+                <input
+                  type="number"
+                  min="18"
+                  max="65"
+                  value={form.age}
+                  onChange={(event) => setForm({ ...form, age: event.target.value })}
+                  required
+                />
+              </label>
+              <label>
+                Blood group
+                <select
+                  value={form.bloodGroup}
+                  onChange={(event) => setForm({ ...form, bloodGroup: event.target.value })}
+                  required
+                >
+                  <option value="">Select blood group</option>
+                  {bloodGroups.map((group) => (
+                    <option key={group} value={group}>
+                      {group}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </>
+          )}
+
+          {form.userRole === "bloodbank" && (
+            <label>
+              License Number
+              <input
+                type="text"
+                value={form.licenseNumber}
+                onChange={(event) => setForm({ ...form, licenseNumber: event.target.value })}
+                required
+              />
+            </label>
+          )}
+
+          {form.userRole === "hospital" && (
+            <label>
+              Registration Number
+              <input
+                type="text"
+                value={form.registrationNumber}
+                onChange={(event) => setForm({ ...form, registrationNumber: event.target.value })}
+                required
+              />
+            </label>
+          )}
+
           <label>
             City
             <input
@@ -151,14 +214,29 @@ export default function RegisterPage() {
             />
           </label>
         </div>
-        <label className="checkbox-row">
-          <input
-            checked={form.isAvailable}
-            onChange={(event) => setForm({ ...form, isAvailable: event.target.checked })}
-            type="checkbox"
-          />
-          I am currently available to donate.
-        </label>
+
+        {form.userRole === "donor" && (
+          <label className="checkbox-row">
+            <input
+              checked={form.isAvailable}
+              onChange={(event) => setForm({ ...form, isAvailable: event.target.checked })}
+              type="checkbox"
+            />
+            I am currently available to donate.
+          </label>
+        )}
+
+        {form.userRole === "hospital" && (
+          <label className="checkbox-row">
+            <input
+              checked={form.isGovernment}
+              onChange={(event) => setForm({ ...form, isGovernment: event.target.checked })}
+              type="checkbox"
+            />
+            This is a government-funded hospital.
+          </label>
+        )}
+
         {error ? <p className="form-error">{error}</p> : null}
         <button className="button button-primary" disabled={submitting} type="submit">
           {submitting ? "Creating account..." : "Register"}
@@ -170,3 +248,4 @@ export default function RegisterPage() {
     </section>
   );
 }
+

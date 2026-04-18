@@ -20,14 +20,19 @@ export default function EmergencyPage() {
   const [form, setForm] = useState(initialForm);
   const [requests, setRequests] = useState([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   async function loadRequests() {
     try {
+      setLoading(true);
       const data = await api("/api/emergency-requests");
       setRequests(data.requests);
     } catch (err) {
       console.error(err);
+      setError("Failed to load emergency requests. Please refresh.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -159,14 +164,17 @@ export default function EmergencyPage() {
           <h1>Urgent needs from the community.</h1>
         </div>
         <motion.div className="stack-list" layout>
-          {requests.map((request) => (
-            <motion.article
-              animate={{ opacity: 1, y: 0 }}
-              className="info-card emergency-card"
-              initial={{ opacity: 0, y: 10 }}
-              key={request.id}
-              layout
-            >
+          {loading ? (
+            <div className="py-8 text-center opacity-50">Fetching active emergencies...</div>
+          ) : (
+            requests.map((request) => (
+              <motion.article
+                animate={{ opacity: 1, y: 0 }}
+                className="info-card emergency-card"
+                initial={{ opacity: 0, y: 10 }}
+                key={request.id}
+                layout
+              >
               <div className="donor-card-head">
                 <h3>{request.patientName}</h3>
                 <span className="badge">{request.bloodGroup}</span>
@@ -186,8 +194,8 @@ export default function EmergencyPage() {
               {request.notes ? <p className="mt-2 text-muted">{request.notes}</p> : null}
               <div className="mt-3 text-xs opacity-60">Posted by {request.postedBy}</div>
             </motion.article>
-          ))}
-          {requests.length === 0 && (
+          )))}
+          {!loading && requests.length === 0 && (
             <p className="text-muted">No active emergency requests found.</p>
           )}
         </motion.div>

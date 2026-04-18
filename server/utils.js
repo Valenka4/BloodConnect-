@@ -1,9 +1,13 @@
 import jwt from "jsonwebtoken";
 
 export function createToken(user) {
-  return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: "7d"
-  });
+  return jwt.sign(
+    { id: user.id, email: user.email, userRole: user.user_role || user.userRole },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d"
+    }
+  );
 }
 
 export function sanitizeUser(row) {

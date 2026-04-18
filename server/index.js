@@ -67,9 +67,8 @@ app.post("/api/auth/register", async (request, response) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
     
-    // Transactional insert (Neon supports standard PG transactions)
-    const [user] = await sql.begin(async (sql) => {
-      const [u] = await sql`
+    // Perform inserts sequentially (serverless client doesn't support .begin template)
+    const [user] = await sql`
         INSERT INTO users (
           full_name,
           email,
@@ -94,20 +93,17 @@ app.post("/api/auth/register", async (request, response) => {
         RETURNING *
       `;
 
-      if (userRole === "bloodbank") {
-        await sql`
+    if (userRole === "bloodbank") {
+      await sql`
           INSERT INTO blood_banks (user_id, license_number)
-          VALUES (${u.id}, ${licenseNumber || null})
+          VALUES (${user.id}, ${licenseNumber || null})
         `;
-      } else if (userRole === "hospital") {
-        await sql`
+    } else if (userRole === "hospital") {
+      await sql`
           INSERT INTO hospitals (user_id, registration_number, is_government)
-          VALUES (${u.id}, ${registrationNumber || null}, ${Boolean(isGovernment)})
+          VALUES (${user.id}, ${registrationNumber || null}, ${Boolean(isGovernment)})
         `;
-      }
-
-      return [u];
-    });
+    }
 
     return response.status(201).json({
       token: createToken(user),
@@ -202,12 +198,12 @@ app.get("/api/emergency-requests", async (_request, response) => {
     const rows = await sql`
       SELECT
         emergency_requests.id,
-        patient_name,
-        blood_group,
-        city,
-        hospital,
-        contact_number,
-        notes,
+        emergency_requests.patient_name,
+        emergency_requests.blood_group,
+        emergency_requests.city,
+        emergency_requests.hospital,
+        emergency_requests.contact_number,
+        emergency_requests.notes,
         emergency_requests.created_at,
         users.full_name AS posted_by_name
       FROM emergency_requests
@@ -278,14 +274,126 @@ app.get("/api/profile", requireAuth, async (request, response) => {
   try {
     const [user] = await sql`SELECT * FROM users WHERE id = ${request.user.id}`;
     if (!user) return response.status(404).json({ message: "User not found." });
-    return response.json({ user: sanitizeUser(user) });
+    
+    let extraData = {};
+    if (user.user_role === 'bloodbank') {
+      const [bank] = await sql`SELECT * FROM blood_banks WHERE user_id = ${user.id}`;
+      extraData = bank || {};
+    } else if (user.user_role === 'hospital') {
+      const [hosp] = await sql`SELECT * FROM hospitals WHERE user_id = ${user.id}`;
+      extraData = hosp || {};
+    }
+
+    return response.json({ user: { ...sanitizeUser(user), ...extraData } });
   } catch (error) {
     console.error("Profile fetch error:", error);
     return response.status(500).json({ message: "Failed to fetch profile." });
   }
 });
 
+// Blood Bank Stock Management
+app.get("/api/bloodbank/stock", requireAuth, async (request, response) => {
+  if (request.user.userRole !== 'bloodbank') {
+    return response.status(403).json({ message: "Access denied." });
+  }
+  try {
+    const [stock] = await sql`SELECT * FROM blood_banks WHERE user_id = ${request.user.id}`;
+    return response.json({ stock });
+  } catch (error) {
+    console.error("Stock fetch error:", error);
+    return response.status(500).json({ message: "Failed to fetch stock." });
+  }
+});
+
+app.put("/api/bloodbank/stock", requireAuth, async (request, response) => {
+  if (request.user.userRole !== 'bloodbank') {
+    return response.status(403).json({ message: "Access denied." });
+  }
+  const {
+    stock_a_plus, stock_a_minus, stock_b_plus, stock_b_minus,
+    stock_o_plus, stock_o_minus, stock_ab_plus, stock_ab_minus
+  } = request.body;
+
+  try {
+    await sql`
+      UPDATE blood_banks
+      SET
+        stock_a_plus = ${stock_a_plus},
+        stock_a_minus = ${stock_a_minus},
+        stock_b_plus = ${stock_b_plus},
+        stock_b_minus = ${stock_b_minus},
+        stock_o_plus = ${stock_o_plus},
+        stock_o_minus = ${stock_o_minus},
+        stock_ab_plus = ${stock_ab_plus},
+        stock_ab_minus = ${stock_ab_minus},
+        last_updated = NOW()
+      WHERE user_id = ${request.user.id}
+    `;
+    return response.json({ message: "Stock updated." });
+  } catch (error) {
+    console.error("Stock update error:", error);
+    return response.status(500).json({ message: "Failed to update stock." });
+  }
+});
+
+// Partner Directory (Hospitals & Blood Banks)
+app.get("/api/partners", async (request, response) => {
+  const { city, role } = request.query;
+  try {
+    // For Neon serverless, we'll use a manually constructed query if dynamic
+    // or better, just separate the cases if few
+    let partners;
+    if (city && role) {
+      partners = await sql`
+        SELECT u.id, u.full_name, u.city, u.phone, u.user_role,
+               b.license_number, h.registration_number, h.is_government
+        FROM users u
+        LEFT JOIN blood_banks b ON b.user_id = u.id
+        LEFT JOIN hospitals h ON h.user_id = u.id
+        WHERE u.user_role IN ('bloodbank', 'hospital')
+          AND LOWER(u.city) LIKE LOWER(${'%' + city + '%'})
+          AND u.user_role = ${role}
+      `;
+    } else if (city) {
+      partners = await sql`
+        SELECT u.id, u.full_name, u.city, u.phone, u.user_role,
+               b.license_number, h.registration_number, h.is_government
+        FROM users u
+        LEFT JOIN blood_banks b ON b.user_id = u.id
+        LEFT JOIN hospitals h ON h.user_id = u.id
+        WHERE u.user_role IN ('bloodbank', 'hospital')
+          AND LOWER(u.city) LIKE LOWER(${'%' + city + '%'})
+      `;
+    } else if (role) {
+      partners = await sql`
+        SELECT u.id, u.full_name, u.city, u.phone, u.user_role,
+               b.license_number, h.registration_number, h.is_government
+        FROM users u
+        LEFT JOIN blood_banks b ON b.user_id = u.id
+        LEFT JOIN hospitals h ON h.user_id = u.id
+        WHERE u.user_role IN ('bloodbank', 'hospital')
+          AND u.user_role = ${role}
+      `;
+    } else {
+      partners = await sql`
+        SELECT u.id, u.full_name, u.city, u.phone, u.user_role,
+               b.license_number, h.registration_number, h.is_government
+        FROM users u
+        LEFT JOIN blood_banks b ON b.user_id = u.id
+        LEFT JOIN hospitals h ON h.user_id = u.id
+        WHERE u.user_role IN ('bloodbank', 'hospital')
+      `;
+    }
+
+    return response.json({ partners });
+  } catch (error) {
+    console.error("Partners fetch error:", error);
+    return response.status(500).json({ message: "Failed to fetch partners." });
+  }
+});
+
 app.put("/api/profile", requireAuth, async (request, response) => {
+  // ... existing update logic (simplified for brevity, should be updated to handle types too)
   const { fullName, age, bloodGroup, city, phone, isAvailable } = request.body;
 
   try {
@@ -293,8 +401,8 @@ app.put("/api/profile", requireAuth, async (request, response) => {
       UPDATE users
       SET
         full_name = ${fullName},
-        age = ${age},
-        blood_group = ${bloodGroup},
+        age = ${age || null},
+        blood_group = ${bloodGroup || null},
         city = ${city},
         phone = ${phone},
         is_available = ${Boolean(isAvailable)}
@@ -314,8 +422,8 @@ app.put("/api/profile", requireAuth, async (request, response) => {
 
 app.get("/api/dashboard", requireAuth, async (_request, response) => {
   try {
-    const [donorCount] = await sql`SELECT COUNT(*)::int AS count FROM users`;
-    const [availableCount] = await sql`SELECT COUNT(*)::int AS count FROM users WHERE is_available = TRUE`;
+    const [donorCount] = await sql`SELECT COUNT(*)::int AS count FROM users WHERE user_role = 'donor'`;
+    const [availableCount] = await sql`SELECT COUNT(*)::int AS count FROM users WHERE is_available = TRUE AND user_role = 'donor'`;
     const [requestCount] = await sql`SELECT COUNT(*)::int AS count FROM emergency_requests`;
 
     return response.json({

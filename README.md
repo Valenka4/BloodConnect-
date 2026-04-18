@@ -11,26 +11,25 @@ BloodConnect is now a full-stack React application with an Express API and Neon 
 
 ## Features
 
-- Donor registration with persistent Neon storage
-- Login with JWT-based session handling
-- Search donors by blood group and city (now with partial matching)
-- Post and view emergency blood requests
-- Protected dashboard and editable donor profile
-- **New**: Premium dark mode support
-- **New**: Smooth page transitions and entrance animations
-- Refreshed responsive UI built in React
+- **Multi-Role Support**: specialized interfaces for Donors, Blood Banks, and Hospitals.
+- **Inventory Tracking**: Blood Banks can manage real-time inventory levels for all blood groups.
+- **Emergency Network**: Hospitals can post urgent patient requirements and search the verified donor network.
+- **Partner Directory**: Search and discover registered medical institutions and blood banks by city.
+- **Developer Tools**: Seeded dev accounts and quick-login options for rapid prototyping.
+- **Design Excellence**: Modern dark-mode compatible UI with smooth Framer Motion animations.
+- **Persistent Storage**: Robust data integrity using Neon Serverless PostgreSQL.
 
 ## Project Structure
 
 ```text
 src/
-  components/
-  context/
-  lib/
-  pages/
+  components/  # Specialized dashboards (BloodBank, Hospital)
+  context/     # Auth and Theme management
+  lib/         # API clients
+  pages/       # Multi-role routing logic
 server/
-  middleware/
-  scripts/
+  middleware/  # JWT & Role-based access control
+  scripts/     # DB initialization and multi-role seeding
 ```
 
 ## Environment Setup
@@ -43,55 +42,45 @@ DATABASE_URL=postgresql://USER:PASSWORD@YOUR-NEON-HOST/neondb?sslmode=require
 JWT_SECRET=replace-with-a-strong-secret
 ```
 
-## Install
+## Documentation
 
-```bash
-npm install
-```
+Full system diagrams and architectural details are available in:
+[System Architecture](file:///C:/Users/Dell/.gemini/antigravity/brain/bc7f8b48-bb93-4e38-b66d-488031586885/system_architecture.md)
 
 ## Initialize and Seed the Database
 
 Run these after your Neon database is ready:
 
 ```bash
-# Create tables
+# Create tables and columns (supports updates)
 npm run db:init
 
-# (Optional) Add sample donor data
+# Add sample data for all roles (donor, bank, hospital)
 npm run db:seed
 ```
 
-This creates:
+This ensures tables for `users`, `blood_banks`, `hospitals`, and `emergency_requests` are ready.
 
-- `users`
-- `emergency_requests`
+## Quick Login (Dev)
 
-## Start in Development
+For testing, use these pre-seeded credentials after running `npm run db:seed`:
 
-```bash
-npm run dev
-```
-
-- React app: `http://localhost:5173`
-- API server: `http://localhost:4000`
-
-## Production Build
-
-```bash
-npm run build
-npm start
-```
+- **Donor**: `donor@dev.com` / `password123`
+- **Blood Bank**: `bank@dev.com` / `password123`
+- **Hospital**: `hospital@dev.com` / `password123`
 
 ## Main API Endpoints
 
-- `POST /api/auth/register`
+- `POST /api/auth/register` - Multi-role registration
 - `POST /api/auth/login`
-- `GET /api/donors`
+- `GET /api/partners` - Fetch institutions with role filtering
+- `GET /api/bloodbank/stock` - Retrieve inventory (Role: Blood Bank)
+- `PUT /api/bloodbank/stock` - Update inventory (Role: Blood Bank)
+- `GET /api/donors` - Search donor database
 - `GET /api/emergency-requests`
 - `POST /api/emergency-requests`
-- `GET /api/profile`
-- `PUT /api/profile`
-- `GET /api/dashboard`
+- `GET /api/profile` - Detailed role-specific profile
+- `GET /api/dashboard` - Stats based on role
 
 ## Notes
 

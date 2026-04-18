@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { Activity, Edit, Heart, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import BloodBankDashboard from "../components/BloodBankDashboard";
+import HospitalDashboard from "../components/HospitalDashboard";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 
@@ -12,6 +14,22 @@ export default function DashboardPage() {
   useEffect(() => {
     api("/api/dashboard").then((data) => setStats(data)).catch(console.error);
   }, []);
+
+  if (user?.userRole === "bloodbank") {
+    return (
+      <section className="page-shell container">
+        <BloodBankDashboard />
+      </section>
+    );
+  }
+
+  if (user?.userRole === "hospital") {
+    return (
+      <section className="page-shell container">
+        <HospitalDashboard />
+      </section>
+    );
+  }
 
   return (
     <section className="page-shell container">
